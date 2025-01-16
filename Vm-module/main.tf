@@ -4,8 +4,8 @@ resource "azurerm_public_ip" "main" {
   name                = "${var.component}-pip"
   resource_group_name = data.azurerm_resource_group.main.name
   location            = data.azurerm_resource_group.main.location
-  allocation_method   = "static"
-
+  allocation_method   = "Dynamic"
+       sku            = "Basic"
 }
 
 resource "azurerm_network_interface" "main" {
@@ -15,13 +15,13 @@ resource "azurerm_network_interface" "main" {
 
   ip_configuration {
     name                          = "internal"
-    subnet_id                     = azurerm_subnet.main.id
+    subnet_id                     = data.azurerm_subnet.main.id
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.main.id
   }
 }
 resource "azurerm_network_security_group" "main" {
-  name                = "${var-component}-nsg"
+  name                = "${var.component}-nsg"
   location            = data.azurerm_resource_group.main.location
   resource_group_name = data.azurerm_resource_group.main.name
   security_rule {
@@ -51,13 +51,29 @@ resource "azurerm_network_security_group" "main" {
 resource "azurerm_network_interface_security_group_association" "main" {
   network_interface_id      = azurerm_network_interface.main.id
   network_security_group_id = azurerm_network_security_group.main.id
+
+}
+resource "azurerm_dns_a_record" "main" {
+  name                = "${var.component}-internal"
+  zone_name           = "espnitsolutions.com"
+  resource_group_name = data.azurerm_resource_group.main.name
+  ttl                 = 300
+  records             = [azurerm_network_interface.main.private_ip_address]
+
+}
+resource "azurerm_dns_a_record" "public" {
+  name                = var.component
+  zone_name           = "espnitsolutions.com"
+  resource_group_name = data.azurerm_resource_group.main.name
+  ttl                 = 300
+  records             = [azurerm_public_ip.main.ip_address]
 }
 resource "azurerm_virtual_machine" "main" {
   name                  = "${var.component}-vm"
   location              = data.azurerm_resource_group.main.location
   resource_group_name   = data.azurerm_resource_group.main.name
   network_interface_ids = [azurerm_network_interface.main.id]
-  vm_size               = "Standard_DS1_v2"
+  vm_size               = "Standard_B2s"
 
  
 
@@ -68,8 +84,10 @@ resource "azurerm_virtual_machine" "main" {
     name              = "${var.component}-osdisk"
     caching           = "ReadWrite"
     create_option     = "FromImage"
-    managed_disk_type = "Standard_B2s"
+    managed_disk_type = "Standard_LRS"
   }
+  delete_os_disk_on_termination = true
+  delete_data_disks_on_termination = true
   os_profile {
     computer_name  = var.component
     admin_username = var.username
