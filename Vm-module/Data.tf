@@ -1,5 +1,5 @@
 data "azurerm_resource_group" "main" {
-  name = "project-Aplha"
+  name = "Project-Alpha"
 }
 
 output "name" {
