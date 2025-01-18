@@ -59,6 +59,7 @@ resource "azurerm_dns_a_record" "main" {
   resource_group_name = data.azurerm_resource_group.main.name
   ttl                 = 300
   records             = [azurerm_network_interface.main.private_ip_address]
+  depends_on          = [ azurerm_network_interface.main ]
 
 }
 resource "azurerm_dns_a_record" "public" {
@@ -67,6 +68,8 @@ resource "azurerm_dns_a_record" "public" {
   resource_group_name = data.azurerm_resource_group.main.name
   ttl                 = 300
   records             = [azurerm_public_ip.main.ip_address]
+  depends_on          = [ azurerm_public_ip.main ]
+
 }
 resource "azurerm_virtual_machine" "main" {
   name                  = "${var.component}-vm"
@@ -78,7 +81,7 @@ resource "azurerm_virtual_machine" "main" {
  
 
   storage_image_reference {
-    id= "/subscriptions/5fc983dd-0425-421b-af56-35481b3c92d4/resourceGroups/Project-Alpha/providers/Microsoft.Compute/galleries/PracticeCustomimage/images/PracticeCustomimage/versions/1.0.0"
+    id= "/subscriptions/5fc983dd-0425-421b-af56-35481b3c92d4/resourceGroups/Project-Alpha/providers/Microsoft.Compute/galleries/PracticeCustomimage/images/Practiceimage/versions/1.0.0"
   }
   storage_os_disk {
     name              = "${var.component}-osdisk"
