@@ -57,7 +57,7 @@ resource "azurerm_dns_a_record" "main" {
   name                = "${var.component}-internal"
   zone_name           = "espnitsolutions.com"
   resource_group_name = data.azurerm_resource_group.main.name
-  ttl                 = 300
+  ttl                 = 10
   records             = [azurerm_network_interface.main.private_ip_address]
   depends_on          = [ azurerm_network_interface.main ]
 
@@ -66,7 +66,7 @@ resource "azurerm_dns_a_record" "public" {
   name                = var.component
   zone_name           = "espnitsolutions.com"
   resource_group_name = data.azurerm_resource_group.main.name
-  ttl                 = 300
+  ttl                 = 10
   records             = [azurerm_public_ip.main.ip_address]
   depends_on          = [ azurerm_public_ip.main ]
 
