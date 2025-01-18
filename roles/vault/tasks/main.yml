@@ -1,23 +1,21 @@
--name: install vault
-ansible.builtin.get_url:
- url: https://releases.hashicorp.com/RHEL/hashicorp.repo
- dest: /etc/yum.repos.d/hashicorp.repo
+---
+- name: Add HashiCorp YUM repository
+  ansible.builtin.get_url:
+    url: https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
+    dest: /etc/yum.repos.d/hashicorp.repo
 
+- name: Install Vault
+  ansible.builtin.dnf:
+    name: vault
+    state: present
 
--name: install vault
-ansible.builtin.dnf:
- name: vault
- state: installed
+- name: Copy Vault configuration file
+  ansible.builtin.copy:
+    src: vault.hcl
+    dest: /etc/vault.d/vault.hcl
 
-
--name: copy vault config file
-ansible.builtin.copy:
-src: vault.hcl
-dest: /etc/vault.d/vault.hcl
-
--name: start vault
-ansible.builtin.systemd_service:
-name: vault
-state: started
-enabled: yes
-
+- name: Start and enable Vault service
+  ansible.builtin.systemd:
+    name: vault
+    state: started
+    enabled: yes
