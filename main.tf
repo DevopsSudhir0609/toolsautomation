@@ -11,7 +11,11 @@ variable "tools" {
   default = {
     "vault" = {
       Port = 8200
-
+    }
+    default={
+      "github-runner"={
+        port=443
+      }
     }
   }
 }
