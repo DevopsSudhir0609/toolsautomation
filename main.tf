@@ -12,13 +12,12 @@ variable "tools" {
     "vault" = {
       Port = 8200
     }
-    default={
-      "github-runner"={
-        port=443
+     "github-runner"={
+        Port= 443
       }
     }
   }
-}
+
 
 
 provider "azurerm" {
