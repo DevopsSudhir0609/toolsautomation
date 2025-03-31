@@ -18,7 +18,9 @@
     state: installed
 
 - name: configure runner
-  ansible.builtin.shell: ./config.sh --url https://github.com/DevopsSudhir0609 --token BKAGGIPG3QAS7XSXZPA2XQDH5KKBG --runnergroup Default --name github-runner --labels selfhosted --work _work --replace
+  ansible.builtin.shell: |
+    ./config.sh --url https://github.com/your-org/your-repo --token YOUR_TOKEN
   args:
     chdir: /github-runner
-  become-user: github-runner
+  become: true
+  become_user: github-runner
