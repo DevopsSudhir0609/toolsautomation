@@ -24,3 +24,12 @@
     chdir: /github-runner
   become: true
   become_user: github-runner
+
+  ignore_errors: yes
+
+  -name: start github runner 
+  ansible.builtin.shell: |
+    ./svc.sh install
+    ./svc.sh start
+  args:
+    chdir: /github-runner
