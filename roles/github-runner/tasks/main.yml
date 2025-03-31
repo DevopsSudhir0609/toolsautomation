@@ -1,4 +1,4 @@
--name: add github runner user 
-ansible.builtin.user:
-  name: guthud-runner
-  home: /github-runner
+- name: add github runner user
+  ansible.builtin.user:
+    name: github-runner
+    home: /github-runner
