@@ -1,0 +1,14 @@
+[Unit]
+Description=GitHub Actions Runner (DevopsSudhir0609.github-runner)
+After=network.target
+
+[Service]
+ExecStart=/github-runner/runsvc.sh
+User=Eagala123
+WorkingDirectory=/github-runner
+KillMode=process
+KillSignal=SIGTERM
+TimeoutStopSec=5min
+
+[Install]
+WantedBy=multi-user.target

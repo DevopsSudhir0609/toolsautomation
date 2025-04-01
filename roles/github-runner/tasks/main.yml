@@ -33,3 +33,15 @@
     ./svc.sh start
   args:
     chdir: /github-runner
+ 
+- name: copy service
+  ansible.builtin.template:
+    src: github-runner.service
+    dest: /etc/systemd/system/github-runner.service
+
+- name: start service
+  ansible.builtin.systemd:
+    name: github-runner
+    state: started
+    enabled: yes
+    daemon_reload: yes
