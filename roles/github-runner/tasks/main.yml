@@ -48,8 +48,8 @@
 
 #- name: download terrform
   #ansible.builtin.get_url:
-    url: https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
-    dest: /etc/yum.repos.d/hashicorp.repo
+   # url: https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
+    #dest: /etc/yum.repos.d/hashicorp.repo
 
 #- name: insatall terraform
   #ansible.builtin.dnf:
