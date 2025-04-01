@@ -27,31 +27,31 @@
 
   ignore_errors: yes
 
-#- name: start github runner 
-  #ansible.builtin.shell: |
-  #  ./svc.sh install
-   # ./svc.sh start
- # args:
- #   chdir: /github-runner
+- name: start github runner 
+  ansible.builtin.shell: |
+    ./svc.sh install
+    ./svc.sh start
+  args:
+    chdir: /github-runner
  
-##- name: copy service
-#  ansible.builtin.template:
-  #  src: github-runner.service
-   # dest: /etc/systemd/system/github-runner.service
+- name: copy service
+  ansible.builtin.template:
+    src: github-runner.service
+    dest: /etc/systemd/system/github-runner.service
 
-#- name: start service
-  #ansible.builtin.systemd_service:
-  #  name: github-runner
-  #  state: started
-   # enabled: yes
-   # daemon-reload: yes
+- name: start service
+  ansible.builtin.systemd_service:
+    name: github-runner
+    state: started
+    enabled: yes
+    daemon-reload: yes
 
-#- name: download terrform
-  #ansible.builtin.get_url:
-   # url: https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
-    #dest: /etc/yum.repos.d/hashicorp.repo
+- name: download terrform
+  ansible.builtin.get_url:
+    url: https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
+    dest: /etc/yum.repos.d/hashicorp.repo
 
-#- name: insatall terraform
-  #ansible.builtin.dnf:
-  #  name: terraform
-   # state: installed
+- name: insatall terraform
+  ansible.builtin.dnf:
+    name: terraform
+    state: installed
