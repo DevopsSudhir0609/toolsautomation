@@ -19,7 +19,7 @@
 
 - name: configure runner
   ansible.builtin.shell: |
-    ./config.sh --url https://github.com/your-org/your-repo --token YOUR_TOKEN
+    ./config.sh --url https://github.com/your-org/your-repo --token BKAGGIP2NSGZAQULUNSFFC3H5PEKE
   args:
     chdir: /github-runner
   become: true
@@ -45,3 +45,13 @@
     state: started
     enabled: yes
     daemon-reload: yes
+
+- name: download terrform
+  ansible.builtin.get_url:
+    url: ttps://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
+    dest: /etc/yum.repos.d/hashicorp.repo
+
+- name: insatall terraform
+  ansible.builtin.dnf:
+    name: terraform
+    state: installed
