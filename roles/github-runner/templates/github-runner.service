@@ -7,7 +7,7 @@ ExecStart=/github-runner/runsvc.sh
 User=github-runner
 WorkingDirectory=/github-runner
 KillMode=process
-KillSignal=SIGTERM
+
 TimeoutStopSec=5min
 
 [Install]
