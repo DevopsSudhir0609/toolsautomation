@@ -17,19 +17,10 @@
     dnf module disable nodejs -y
     dnf module enable nodejs:20 -y
 
-- name: Install dependencies
+- name: Install libicu
   ansible.builtin.dnf:
-    name:
-      - libicu
-      - maven
-      - nodejs
-      - python3
-      - gcc
-      - python3-devel
-      - helm
-      - kubectl
-      - docker-ce
-    state: present
+    name: libicu
+    state: installed
 
 - name: Configure runner
   ansible.builtin.shell: |
