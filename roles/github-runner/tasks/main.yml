@@ -1,57 +1,120 @@
-- name: add github runner user
-  ansible.builtin.user:
-    name: github-runner
-    home: /github-runner
-
-
-- name: Download runner software
-  ansible.builtin.unarchive:
-    src: https://github.com/actions/runner/releases/download/v2.323.0/actions-runner-linux-x64-2.323.0.tar.gz
-    dest: /github-runner
-    owner: github-runner
-    group: github-runner
-    remote_src: yes
-
-- name: install libicu
-  ansible.builtin.dnf:
-    name: libicu
-    state: installed
-
-- name: configure runner
-  ansible.builtin.shell: |
-    ./config.sh --url https://github.com/your-org/your-repo --token BKAGGIP2NSGZAQULUNSFFC3H5PEKE
-  args:
-    chdir: /github-runner
+---
+- name: Set up GitHub Actions self-hosted runner
+  hosts: all
   become: true
-  become_user: github-runner
 
-  ignore_errors: yes
+  tasks:
+    - name: Add github runner user
+      ansible.builtin.user:
+        name: github-runner
+        home: /github-runner
+        shell: /bin/bash
 
-- name: start github runner 
-  ansible.builtin.shell: |
-    ./svc.sh install
-    ./svc.sh start
-  args:
-    chdir: /github-runner
- 
-- name: copy service
-  ansible.builtin.template:
-    src: github-runner.service
-    dest: /etc/systemd/system/github-runner.service
+    - name: Download runner software
+      ansible.builtin.unarchive:
+        src: https://github.com/actions/runner/releases/download/v2.323.0/actions-runner-linux-x64-2.323.0.tar.gz
+        dest: /github-runner
+        owner: github-runner
+        group: github-runner
+        remote_src: yes
 
-- name: start service
-  ansible.builtin.systemd_service:
-    name: github-runner
-    state: started
-    enabled: yes
-    daemon-reload: yes
+    - name: Install dependencies
+      ansible.builtin.dnf:
+        name:
+          - libicu
+          - maven
+          - nodejs
+          - python3
+          - gcc
+          - python3-devel
+          - helm
+          - kubectl
+          - docker-ce
+        state: present
 
-- name: download terrform
-  ansible.builtin.get_url:
-    url: https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
-    dest: /etc/yum.repos.d/hashicorp.repo
+    - name: Setup Nodejs Module
+      ansible.builtin.shell: |
+        dnf module disable nodejs -y
+        dnf module enable nodejs:20 -y
 
-- name: insatall terraform
-  ansible.builtin.dnf:
-    name: terraform
-    state: installed
+    - name: Configure runner
+      ansible.builtin.shell: |
+        ./config.sh --url https://github.com/your-org/your-repo --token BKAGGIP2NSGZAQULUNSFFC3H5PEKE
+      args:
+        chdir: /github-runner
+      become: true
+      become_user: github-runner
+
+    - name: Install runner service
+      ansible.builtin.shell: |
+        ./svc.sh install
+      args:
+        chdir: /github-runner
+      become: true
+      become_user: github-runner
+
+        - name: Install runner service
+      ansible.builtin.shell: |
+        ./svc.sh install
+      args:
+        chdir: /github-runner
+      become: true
+      become_user: github-runner
+
+    - name: Deploy GitHub Runner systemd service
+      ansible.builtin.template:
+        src: github-runner.service.j2
+        dest: /etc/systemd/system/github-runner.service
+        owner: root
+        group: root
+        mode: '0644'
+      notify: restart github runner
+
+    - name: Setup Docker
+      ansible.builtin.template:
+        src: docker.repo.j2
+        dest: /etc/yum.repos.d/docker.repo
+  
+
+    - name: Add user to docker group
+      ansible.builtin.user:
+        name: github-runner
+        groups: docker
+        append: yes
+
+    - name: Start and enable services
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+        daemon_reload: yes
+      loop:
+        - docker
+        - github-runner
+
+    - name: Install Terraform
+      ansible.builtin.get_url:
+        url: https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
+        dest: /etc/yum.repos.d/hashicorp.repo
+      register: hashicorp_repo
+
+    - name: Install Terraform package
+      ansible.builtin.dnf:
+        name: terraform
+        state: present
+      when: hashicorp_repo.changed
+
+    - name: Install Sonar Scanner
+      ansible.builtin.unarchive:
+        src: https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.8.0.2856-linux.zip
+        dest: /opt
+        remote_src: yes
+
+    - name: ACR login
+      ansible.builtin.shell: |
+        az acr login --name "{{ acr_name }}" --expose-token | jq -r '.accessToken' | docker login "{{ acr_name }}.azurecr.io" --username "{{ acr_name }}" --password-stdin
+      args:
+        chdir: /github-runner
+      become: true
+      become_user: github-runner
+      when: acr_name is defined
