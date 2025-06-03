@@ -24,7 +24,7 @@
 
 - name: Configure runner
   ansible.builtin.shell: |
-   ./config.sh --url https://github.com/DevopsSudhir0609 --token BKAGGIOHHHPU4IUANHIP26DIH3N4E
+   ./config.sh --url https://github.com/DevopsSudhir0609 --token BKAGGIO77OZJ7A235ZZZV4DIH3YRA
   args:
     chdir: /github-runner
   become: true
