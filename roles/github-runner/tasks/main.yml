@@ -18,6 +18,11 @@
         group: github-runner
         remote_src: yes
 
+    - name: Setup Nodejs Module
+      ansible.builtin.shell: |
+        dnf module disable nodejs -y
+        dnf module enable nodejs:20 -y
+
     - name: Install dependencies
       ansible.builtin.dnf:
         name:
@@ -31,11 +36,6 @@
           - kubectl
           - docker-ce
         state: present
-
-    - name: Setup Nodejs Module
-      ansible.builtin.shell: |
-        dnf module disable nodejs -y
-        dnf module enable nodejs:20 -y
 
     - name: Configure runner
       ansible.builtin.shell: |
@@ -53,14 +53,6 @@
       become: true
       become_user: github-runner
 
-        - name: Install runner service
-      ansible.builtin.shell: |
-        ./svc.sh install
-      args:
-        chdir: /github-runner
-      become: true
-      become_user: github-runner
-
     - name: Deploy GitHub Runner systemd service
       ansible.builtin.template:
         src: github-runner.service.j2
@@ -70,11 +62,10 @@
         mode: '0644'
       notify: restart github runner
 
-    - name: Setup Docker
+    - name: Setup Docker repo
       ansible.builtin.template:
         src: docker.repo.j2
         dest: /etc/yum.repos.d/docker.repo
-  
 
     - name: Add user to docker group
       ansible.builtin.user:
@@ -118,3 +109,10 @@
       become: true
       become_user: github-runner
       when: acr_name is defined
+    
+      handlers:
+        - name: restart github runner
+          ansible.builtin.systemd:
+            name: github-runner
+            state: restarted
+            daemon_reload: yes
